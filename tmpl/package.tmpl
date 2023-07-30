@@ -1,0 +1,16 @@
+{{/* This is the per-package default template. The input is the mod.Package structure */}}
+
+<h2>Package {{.Name}}</h2>
+<p> path {{.Path}}
+<p> import {{.ImportPath}}
+
+{{ $p := . }}
+{{ .CommentHtml }}
+
+<h3>Constants</h3>
+
+{{ range .Consts }}
+<p>const {{.Name}} = {{.Value}}
+{{.Comment}}
+
+{{end}}
