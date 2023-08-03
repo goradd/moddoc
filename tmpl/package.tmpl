@@ -1,16 +1,85 @@
 {{/* This is the per-package default template. The input is the mod.Package structure */}}
 
-<h2>Package {{.Name}}</h2>
+<div class="package">
+
+<h1>Package {{.Name}}</h1>
 <p> path {{.Path}}
 <p> import {{.ImportPath}}
 
 {{ $p := . }}
 {{ .CommentHtml }}
 
-<h3>Constants</h3>
+<h2 id="Index">Index</h2>
+{{if .Constants }}<p><a href="#Constants">Constants</a>{{end}}
+{{if .Variables}}<p><a href="#Variables">Variables</a>{{end}}
+{{if .Functions}}<p><a href="#Functions">Functions</a>{{end}}
+{{if .Types}}<p><a href="#Types">Types</a>{{end}}
 
-{{ range .Consts }}
-<p>const {{.Name}} = {{.Value}}
-{{.Comment}}
+
+<h2 id="Constants">Constants</h2>
+{{if not .Constants}} <p>This section is empty. {{end}}
+{{ range .Constants }}
+{{range .Names}}
+<a id="{{.}}"></a>
+{{end}}
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+{{end}}
+
+<h2 id="Variables">Variables</h2>
+{{if not .Variables}} <p>This section is empty. {{end}}
+{{ range .Variables }}
+{{range .Names}}
+<a id="{{.}}"></a>
+{{end}}
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+{{end}}
+
+<h2 id="Functions">Functions</h2>
+{{if not .Functions}} <p>This section is empty. {{end}}
+{{ range .Functions }}
+<h3 id="{{.Name}}" class="func-name">func <i>{{.Name}}</i></h3>
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+{{end}}
+
+<h2 id="Types">Types</h2>
+{{if not .Types}} <p>This section is empty. {{end}}
+{{ range .Types }}
+{{ $typename := .Name }}
+<h3 id="{{ .Name}}" class="type-name">type <i>{{ .Name }}</i></h3>
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+
+{{ range .Constants }}
+{{range .Names}}
+<a id="{{$typename}}.{{.}}"></a>
+{{end}}
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+{{end}}
+
+{{ range .Variables }}
+{{range .Names}}
+<a id="{{$typename}}.{{.}}"></a>
+{{end}}
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+{{end}}
+
+{{ range .Functions }}
+<h4 id="{{$typename}}.{{.Name}}" class="func-name">func <i>{{.Name}}</i></h4>
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+{{end}}
+
+{{ range .Methods }}
+<h4 id="{{$typename}}.{{.Name}}" class="method-name">func ({{.Receiver}}) <i>{{.Name}}</i></h4>
+<pre>{{.Code}}</pre>
+{{.CommentHtml}}
+{{end}}
 
 {{end}}
+
+<div>

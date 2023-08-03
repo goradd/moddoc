@@ -108,7 +108,7 @@ func getPackages(dirPaths []string, modPath string, modImportPath string) (pkgs 
 				log.Fatalf("doc package error: %s, %s", pkg.Name, err)
 			}
 
-			p := NewPackage(docPkg, relPath, modImportPath)
+			p := NewPackage(docPkg, fset, relPath, modImportPath)
 			pkgs = append(pkgs, p)
 		}
 
