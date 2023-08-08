@@ -1,0 +1,9 @@
+{{/* This is the main default template. The input is the mod.Module structure. The output will be put in an index.html file. */}}
+
+<h1>Module {{.Name}}</h1>
+
+<ul>
+{{ range .Packages }}
+<li><a href="{{.FileName}}">{{ .Path }}</a>
+{{end}}
+</ul>

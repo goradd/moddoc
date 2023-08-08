@@ -1,4 +1,3 @@
-// Package in contains test data.
 package in
 
 // notExported is a function that is not exported.

@@ -9,7 +9,7 @@ import (
 //go:embed package.tmpl
 var PackageTemplate string
 
-// ModuleTemplate is the content of the module template.
+// IndexTemplate is the content of the module template that will become the index.html file.
 //
-//go:embed mod.tmpl
-var ModuleTemplate string
+//go:embed index.tmpl
+var IndexTemplate string

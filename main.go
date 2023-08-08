@@ -17,9 +17,8 @@ import (
 )
 
 var packageTemplateFlag = flag.String("pTmpl", "", "The package page template.")
-
-// var indexTemplateFlag = flag.String("iTmpl", "", "The index page template.")
-var sourcePathFlag = flag.String("src", "", "The path to the module directory. Should have a go.mod file.")
+var indexTemplateFlag = flag.String("iTmpl", "", "The index page template.")
+var sourcePathFlag = flag.String("i", "", "The path to the module directory. Should have a go.mod file.")
 var outPathFlag = flag.String("o", "", "The output directory.")
 
 func main() {
@@ -42,27 +41,42 @@ func main() {
 	}
 
 	var err error
-	t := template.New("packageTemplate")
+	packageTemplate := template.New("packageTemplate")
 	if *packageTemplateFlag != "" {
-		t, err = t.ParseFiles(*packageTemplateFlag)
+		packageTemplate, err = packageTemplate.ParseFiles(*packageTemplateFlag)
 		if err != nil {
 			fmt.Printf("error opening package template %s", *packageTemplateFlag)
 		}
 	} else {
-		t, err = t.Parse(tmpl.PackageTemplate)
+		packageTemplate, err = packageTemplate.Parse(tmpl.PackageTemplate)
 		if err != nil {
 			fmt.Printf("error parsing default package template")
+		}
+	}
+
+	indexTemplate := template.New("indexTemplate")
+	if *indexTemplateFlag != "" {
+		indexTemplate, err = indexTemplate.ParseFiles(*indexTemplateFlag)
+		if err != nil {
+			fmt.Printf("error opening index template %s", *indexTemplateFlag)
+		}
+	} else {
+		indexTemplate, err = indexTemplate.Parse(tmpl.IndexTemplate)
+		if err != nil {
+			fmt.Printf("error parsing default index template")
 		}
 	}
 
 	m := mod.NewModule(srcDir)
 
 	for _, p := range m.Packages {
-		execTemplate(t, p, outDir)
+		execPackageTemplate(packageTemplate, p, outDir)
 	}
+
+	execModuleTemplate(indexTemplate, m, outDir)
 }
 
-func execTemplate(t *template.Template, p *mod.Package, outDir string) {
+func execPackageTemplate(t *template.Template, p *mod.Package, outDir string) {
 	filePath := filepath.Join(outDir, p.FileName)
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
@@ -70,4 +84,14 @@ func execTemplate(t *template.Template, p *mod.Package, outDir string) {
 	}
 	defer file.Close()
 	err = t.Execute(file, p)
+}
+
+func execModuleTemplate(t *template.Template, m *mod.Module, outDir string) {
+	filePath := filepath.Join(outDir, "index.html")
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		log.Fatalf("error opening file %s", filePath)
+	}
+	defer file.Close()
+	err = t.Execute(file, m)
 }
