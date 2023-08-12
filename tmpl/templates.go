@@ -1,3 +1,4 @@
+// Package tmpl imports the default templates into the application.
 package tmpl
 
 import (

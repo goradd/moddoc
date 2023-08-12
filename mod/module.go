@@ -28,8 +28,6 @@ type Module struct {
 	// The first package in the list represents the package in the same
 	// directory as the go.mod file, if there is a package there.
 	Packages []*Package
-
-	// TODO: Add Readme file
 }
 
 // NewModule walks a module directory, returning a Module structure.

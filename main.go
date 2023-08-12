@@ -1,6 +1,6 @@
 // Package main is the entry point for the docmod application.
 //
-// docmod outputs static html documentation for the given source directory.
+// moddoc outputs static html documentation for the given source directory.
 //
 // See the [mod.Module] structure for the structure that is passed to the main template for processing.
 package main
@@ -9,17 +9,17 @@ import (
 	"docmod/mod"
 	"docmod/tmpl"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"text/template"
 )
 
-var packageTemplateFlag = flag.String("pTmpl", "", "The package page template.")
-var indexTemplateFlag = flag.String("iTmpl", "", "The index page template.")
-var sourcePathFlag = flag.String("i", "", "The path to the module directory. Should have a go.mod file.")
-var outPathFlag = flag.String("o", "", "The output directory.")
+var packageTemplateFlag = flag.String("pTmpl", "", "The path to a custom package page template.")
+var indexTemplateFlag = flag.String("iTmpl", "", "The path to a custom index page template.")
+var sourcePathFlag = flag.String("i", "", "The path to the module directory. Should have a go.mod file. Will use current working directory by default.")
+var outPathFlag = flag.String("o", "", "The output directory. Will use current working directory by default.")
+var outputTemplatesFlag = flag.Bool("t", false, "Will write out the default index.tmpl file and package.tmpl. Will output to the directory specified in the -o flag.")
 
 func main() {
 	flag.Parse()
@@ -28,7 +28,7 @@ func main() {
 	if srcDir == "" {
 		var err error
 		if srcDir, err = os.Getwd(); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
@@ -36,8 +36,16 @@ func main() {
 	if outDir == "" {
 		var err error
 		if outDir, err = os.Getwd(); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
+	}
+
+	if *outputTemplatesFlag {
+		err := outputTemplates(outDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
 
 	var err error
@@ -45,12 +53,14 @@ func main() {
 	if *packageTemplateFlag != "" {
 		packageTemplate, err = packageTemplate.ParseFiles(*packageTemplateFlag)
 		if err != nil {
-			fmt.Printf("error opening package template %s", *packageTemplateFlag)
+			log.Fatalf("error opening package template %s", *packageTemplateFlag)
+			return
 		}
 	} else {
 		packageTemplate, err = packageTemplate.Parse(tmpl.PackageTemplate)
 		if err != nil {
-			fmt.Printf("error parsing default package template")
+			log.Fatalf("error parsing default package template")
+			return
 		}
 	}
 
@@ -58,12 +68,14 @@ func main() {
 	if *indexTemplateFlag != "" {
 		indexTemplate, err = indexTemplate.ParseFiles(*indexTemplateFlag)
 		if err != nil {
-			fmt.Printf("error opening index template %s", *indexTemplateFlag)
+			log.Fatalf("error opening index template %s", *indexTemplateFlag)
+			return
 		}
 	} else {
 		indexTemplate, err = indexTemplate.Parse(tmpl.IndexTemplate)
 		if err != nil {
-			fmt.Printf("error parsing default index template")
+			log.Fatalf("error parsing default index template")
+			return
 		}
 	}
 
@@ -94,4 +106,21 @@ func execModuleTemplate(t *template.Template, m *mod.Module, outDir string) {
 	}
 	defer file.Close()
 	err = t.Execute(file, m)
+}
+
+func outputTemplates(outDir string) error {
+	filePath := filepath.Join(outDir, "index.tmpl")
+	if err := writeFile(tmpl.IndexTemplate, filePath); err != nil {
+		return err
+	}
+
+	filePath = filepath.Join(outDir, "package.tmpl")
+	if err := writeFile(tmpl.PackageTemplate, filePath); err != nil {
+		return err
+	}
+	return nil
+}
+
+func writeFile(inContent, outFile string) error {
+	return os.WriteFile(outFile, []byte(inContent), 0644)
 }
