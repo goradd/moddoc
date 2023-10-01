@@ -33,6 +33,33 @@ options:
 - pTmpl: The path to the package template file. By default, it will use its internal package template file.
 - t: Instead of writing out the html, will output the default template files. You can use these as starting points for your custom template files. 
 
+## Tags
+Add the following to the bottom of a comment to prevent documentation from being
+generated for that item. This works with package comments too:
+```
+\\ doc: hide
+```
+
+Add a "type=" specifier to a comment to assign the documentation for that item
+to a particular struct type. The type given must be a struct type in the same
+package.
+```
+\\ doc: type=MyType
+```
+For example, the following function would normally be included in package level
+documentation, but the doc: type= tag will put it in the Animal section where
+it logically belongs.
+
+```
+var animals []Animal
+
+// func CountAnimals returns the number of animals found.
+// doc: type=Animal
+func CountAnimals() int {
+    return len(animals)
+}
+```
+
 ## Contributions
 Please submit your suggestions for improvement.
 
