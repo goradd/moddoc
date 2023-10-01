@@ -107,7 +107,9 @@ func getPackages(dirPaths []string, modPath string, modImportPath string) (pkgs 
 			}
 
 			p := NewPackage(docPkg, fset, relPath, modImportPath)
-			pkgs = append(pkgs, p)
+			if p != nil {
+				pkgs = append(pkgs, p)
+			}
 		}
 
 	}
