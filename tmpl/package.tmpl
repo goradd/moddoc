@@ -39,8 +39,7 @@
 <h2 id="Functions">Functions</h2>
 {{if not .Functions}} <p>This section is empty. {{end}}
 {{ range .Functions }}
-<h3 id="{{.Name}}" class="func-name">func <i>{{.Name}}</i></h3>
-<pre>{{.Code}}</pre>
+<h3 id="{{.Name}}" class="func-name"><pre>{{.Code}}</pre></h3>
 {{.CommentHtml}}
 {{end}}
 
@@ -52,6 +51,7 @@
 <pre>{{.Code}}</pre>
 {{.CommentHtml}}
 
+{{if .Constants}}<h3 id = "{{ .Name}}.Constants">Constants</h3>{{end}}
 {{ range .Constants }}
 {{range .Names}}
 <a id="{{$typename}}.{{.}}"></a>
@@ -60,6 +60,7 @@
 {{.CommentHtml}}
 {{end}}
 
+{{if .Variables}}<h3 id = "{{ .Name}}.Variables">Variables</h3>{{end}}
 {{ range .Variables }}
 {{range .Names}}
 <a id="{{$typename}}.{{.}}"></a>
@@ -68,15 +69,16 @@
 {{.CommentHtml}}
 {{end}}
 
+{{if .Functions}}<h3 id = "{{ .Name}}.Functions">Functions</h3>{{end}}
 {{ range .Functions }}
-<h4 id="{{$typename}}.{{.Name}}" class="func-name">func <i>{{.Name}}</i></h4>
-<pre>{{.Code}}</pre>
+<h4 id="{{$typename}}.{{.Name}}" class="func-name"><pre>{{.Code}}</pre></h4>
 {{.CommentHtml}}
 {{end}}
 
+{{if .Methods}}<h3 id = "{{ .Name}}.Methods">Methods</h3>{{end}}
 {{ range .Methods }}
-<h4 id="{{$typename}}.{{.Name}}" class="method-name">func ({{.Receiver}}) <i>{{.Name}}</i></h4>
-<pre>{{.Code}}</pre>
+<h4 id="{{$typename}}.{{.Name}}" class="method-name"><pre>{{.Code}}</pre></h4>
+
 {{.CommentHtml}}
 {{end}}
 

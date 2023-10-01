@@ -1,4 +1,4 @@
-module docmod
+module moddoc
 
 go 1.20
 

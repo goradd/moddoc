@@ -1,15 +1,16 @@
-// Package main is the entry point for the docmod application.
+// Package main is the entry point for the moddoc application.
 //
 // moddoc outputs static html documentation for the given source directory.
 //
-// See the [mod.Module] structure for the structure that is passed to the main template for processing.
+// See the [moddoc/mod.Module] structure for the structure that is passed to the main template for processing.
 package main
 
 import (
-	"docmod/mod"
-	"docmod/tmpl"
 	"flag"
+	"fmt"
 	"log"
+	"moddoc/mod"
+	"moddoc/tmpl"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -81,11 +82,29 @@ func main() {
 
 	m := mod.NewModule(srcDir)
 
+	if err := createDirectoryIfNotExists(outDir); err != nil {
+		log.Fatalf("error creating output directory: %s", err)
+		return
+	}
+
 	for _, p := range m.Packages {
 		execPackageTemplate(packageTemplate, p, outDir)
 	}
 
 	execModuleTemplate(indexTemplate, m, outDir)
+}
+
+func createDirectoryIfNotExists(directoryPath string) error {
+	// Check if the directory already exists
+	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
+		// Directory does not exist, so create it
+		err := os.MkdirAll(directoryPath, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to create directory: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func execPackageTemplate(t *template.Template, p *mod.Package, outDir string) {
