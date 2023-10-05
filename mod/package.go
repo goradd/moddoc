@@ -24,27 +24,48 @@ type HTMLer interface {
 	toHTML(pkg *Package) string
 }
 
+// PathPart is a directory in a directory list that refers to a package.
+type PathPart struct {
+	// DirName is the name of the directory
+	DirName string
+	// DocFile is the name of the documentation file associated with the package there, or the empty
+	// string if there is no documentation for this part of the path.
+	DocFile string
+}
+
 // Package is a deconstruction of a package into its documentation parts for relatively easy consumption by a template.
+//
+// This is the .Package that is sent to the package.tmpl templat.
 //
 // All strings listed are not escaped.
 // Call [HTML] on an item to convert it to html.
 type Package struct {
+	// DocPkg is the package structure as extracted from Go doc.
 	DocPkg *doc.Package
 	// Fset is the fileset of the files in package.
 	Fset *token.FileSet
-	// ModuleName is the name of the module take from the go.mod file, and is also the root of the import path.
-	ModuleName  string
-	Path        string
+
+	// Module is the parent module structure, put here for convenience
+	Module *Module
+
+	// Path is the relative path from the home directory to the package. It will always be separate by "/", even on windows.
+	Path string
+
+	// PathParts are the names of the directories leading from the home directory to the package.
+	// The first directory is the name of the directory holding the module.
+	PathParts   []PathPart
 	Name        string
 	ImportPath  string
 	Synopsis    string
 	CommentHtml string
-	FileName    string
-	Constants   []Constant
-	Variables   []Variable
-	Functions   []Function
-	Types       []*Type
-	types       map[string]*Type // to manipulate the type after its inserted
+
+	// FileName is the name of the documentation file corresponding to this package.
+	FileName  string
+	Constants []Constant
+	Variables []Variable
+	Functions []Function
+	Types     []*Type
+	types     map[string]*Type // to manipulate the type after its inserted
 	//paths       map[string]struct{} // the set of valid paths in the package to know if we can link to them
 }
 
@@ -60,16 +81,16 @@ func (p *Package) HTML(t any) string {
 	}
 }
 
-func NewPackage(p *doc.Package, fset *token.FileSet, dirPath string, importRoot string) *Package {
+func NewPackage(p *doc.Package, fset *token.FileSet, dirPath string, module *Module) *Package {
 	n := new(Package)
 	n.DocPkg = p
 	n.Fset = fset
-	n.ModuleName = importRoot
+	n.Module = module
 	n.Name = p.Name
 	n.Synopsis = p.Synopsis(p.Doc)
 	n.ImportPath = p.ImportPath
-	n.Path = dirPath + `/`
-	n.FileName = makeFileName(importRoot, dirPath, p.Name)
+	n.Path = dirPath
+	n.FileName = makeFileName(module.Name, dirPath, p.Name)
 	cmt, flags := parseCommentFlags(p.Doc)
 	if _, ok := flags[hideCommand]; ok {
 		// We are being told to hide the package documentation completely
@@ -82,6 +103,16 @@ func NewPackage(p *doc.Package, fset *token.FileSet, dirPath string, importRoot 
 	n.parseFuncs()
 	n.parseTypes()
 	n.applyFlags()
+
+	// If after all processing, there is nothing to comment, just ignore the whole package
+	if n.CommentHtml == "" &&
+		n.Types == nil &&
+		n.Functions == nil &&
+		n.Variables == nil &&
+		n.Constants == nil {
+
+		return nil
+	}
 	return n
 }
 
@@ -117,11 +148,11 @@ func (p *Package) parseHtmlComment(text string) (html string) {
 	printer := p.DocPkg.Printer()
 
 	printer.DocLinkURL = func(link *comment.DocLink) (url string) {
-		if strings.HasPrefix(link.ImportPath, p.ModuleName) {
+		if strings.HasPrefix(link.ImportPath, p.Module.Name) {
 			// A local package, so use the file name
-			l := strings.TrimPrefix(link.ImportPath, p.ModuleName)
+			l := strings.TrimPrefix(link.ImportPath, p.Module.Name)
 			l = strings.TrimPrefix(l, "/")
-			url = makeFileName(p.ModuleName, l, p.Name)
+			url = makeFileName(p.Module.Name, l, p.Name)
 		} else if strings.ContainsRune(link.ImportPath, '.') {
 			// Indicates this is a path to a URL
 			url = "https://" + link.ImportPath
@@ -149,7 +180,7 @@ func makeFileName(importRoot string, dirPath string, packageName string) string 
 	if dirPath == "." || dirPath == "" {
 		fileName = path.Base(importRoot)
 	} else {
-		fileName = strings.ReplaceAll(dirPath, string(filepath.Separator), "_")
+		fileName = strings.ReplaceAll(dirPath, "/", "_")
 		fileName := strings.TrimPrefix(fileName, "._")
 		if filepath.Base(dirPath) != packageName {
 			// a package that is not named the same as its directory, so append the package name to keep the file name unique

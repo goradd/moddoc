@@ -87,8 +87,8 @@ func main() {
 		return
 	}
 
-	for _, p := range m.Packages {
-		execPackageTemplate(packageTemplate, p, outDir)
+	for k := range m.Packages {
+		execPackageTemplate(packageTemplate, m.Packages, k, outDir)
 	}
 
 	execModuleTemplate(indexTemplate, m, outDir)
@@ -107,14 +107,15 @@ func createDirectoryIfNotExists(directoryPath string) error {
 	return nil
 }
 
-func execPackageTemplate(t *template.Template, p *mod.Package, outDir string) {
-	filePath := filepath.Join(outDir, p.FileName)
+func execPackageTemplate(t *template.Template, pkgs map[string]*mod.Package, pkgKey string, outDir string) {
+	pkg := pkgs[pkgKey]
+	filePath := filepath.Join(outDir, pkg.FileName)
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		log.Fatalf("error opening file %s", filePath)
 	}
 	defer file.Close()
-	err = t.Execute(file, p)
+	err = t.Execute(file, pkg)
 }
 
 func execModuleTemplate(t *template.Template, m *mod.Module, outDir string) {

@@ -1,23 +1,30 @@
 {{/* This is the per-package default template. The input is the mod.Package structure */}}
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
+{{/* Build the breadcrumb in the navbar */}}
+<nav>
+{{range .PathParts}}{{if .DocFile }}<a href="{{.DocFile}}">{{.DirName}}</a>{{else}}{{.DirName}}{{end}}/{{end}}
+</nav>
 <div class="package">
-
 <h1>Package {{.Name}}</h1>
-<p> path {{.Path}}
-<p> import {{.ImportPath}}
+<p class="import_path"> import {{.ImportPath}}</p>
 
 {{ $p := . }}
 {{ .CommentHtml }}
 
-<h2 id="Index">Index</h2>
+<h2 id="index">Index</h2>
 {{if .Constants }}<p><a href="#Constants">Constants</a>{{end}}
 {{if .Variables}}<p><a href="#Variables">Variables</a>{{end}}
 {{if .Functions}}<p><a href="#Functions">Functions</a>{{end}}
 {{if .Types}}<p><a href="#Types">Types</a>{{end}}
 
-
+{{if .Constants}}
 <h2 id="Constants">Constants</h2>
-{{if not .Constants}} <p>This section is empty. {{end}}
 {{ range .Constants }}
 {{range .Names}}
 <a id="{{.}}"></a>
@@ -25,9 +32,10 @@
 <pre>{{.Code}}</pre>
 {{.CommentHtml}}
 {{end}}
+{{end}}
 
+{{if .Variables}}
 <h2 id="Variables">Variables</h2>
-{{if not .Variables}} <p>This section is empty. {{end}}
 {{ range .Variables }}
 {{range .Names}}
 <a id="{{.}}"></a>
@@ -35,16 +43,18 @@
 <pre>{{.Code}}</pre>
 {{.CommentHtml}}
 {{end}}
+{{end}}
 
+{{if .Functions}}
 <h2 id="Functions">Functions</h2>
-{{if not .Functions}} <p>This section is empty. {{end}}
 {{ range .Functions }}
 <h3 id="{{.Name}}" class="func-name"><pre>{{.Code}}</pre></h3>
 {{.CommentHtml}}
 {{end}}
+{{end}}
 
+{{if .Types}}
 <h2 id="Types">Types</h2>
-{{if not .Types}} <p>This section is empty. {{end}}
 {{ range .Types }}
 {{ $typename := .Name }}
 <h3 id="{{ .Name}}" class="type-name">type <i>{{ .Name }}</i></h3>
@@ -81,7 +91,9 @@
 
 {{.CommentHtml}}
 {{end}}
-
+{{end}}
 {{end}}
 
-<div>
+</div>
+</body>
+</html>

@@ -24,10 +24,12 @@ import (
 type Module struct {
 	// Name is the module name extracted from the go.mod file.
 	Name string
+	// DirName is the name of the directory holding the module. This is not always the same, but often is.
+	DirName string
 	// Packages is the documentation for all the packages in the module.
 	// The first package in the list represents the package in the same
 	// directory as the go.mod file, if there is a package there.
-	Packages []*Package
+	Packages map[string]*Package
 }
 
 // NewModule walks a module directory, returning a Module structure.
@@ -37,6 +39,7 @@ func NewModule(modPath string) *Module {
 	m := new(Module)
 	importPath := getImportPath(modPath)
 	m.Name = path.Base(importPath)
+	m.DirName = filepath.Base(modPath)
 
 	var dirPaths []string
 
@@ -60,7 +63,7 @@ func NewModule(modPath string) *Module {
 		log.Fatalf("no directories found")
 	}
 
-	m.Packages = getPackages(dirPaths, modPath, importPath)
+	m.Packages = getPackages(dirPaths, modPath, m)
 	return m
 }
 
@@ -82,7 +85,9 @@ func getImportPath(modPath string) string {
 	return ""
 }
 
-func getPackages(dirPaths []string, modPath string, modImportPath string) (pkgs []*Package) {
+func getPackages(dirPaths []string, modPath string, module *Module) (pkgs map[string]*Package) {
+	pkgs = make(map[string]*Package)
+
 	for _, dirPath := range dirPaths {
 		fset := token.NewFileSet()
 		parsedPackages, err := parser.ParseDir(fset, dirPath, nil, parser.ParseComments)
@@ -99,19 +104,42 @@ func getPackages(dirPaths []string, modPath string, modImportPath string) (pkgs 
 			}
 
 			relPath, _ := filepath.Rel(modPath, dirPath)
-			pkgImportPath := path.Join(modImportPath, relPath)
+			pkgImportPath := path.Join(module.Name, relPath)
 
 			docPkg := doc.New(pkg, pkgImportPath, 0)
 			if err != nil {
 				log.Fatalf("doc package error: %s, %s", pkg.Name, err)
 			}
 
-			p := NewPackage(docPkg, fset, relPath, modImportPath)
+			p := NewPackage(docPkg, fset, relPath, module)
 			if p != nil {
-				pkgs = append(pkgs, p)
+				pkgs[p.Path] = p
 			}
 		}
-
 	}
+
+	// Take another pass through the packages and build each the PathParts
+	for path, pkg := range pkgs {
+		parts := strings.Split(path, string(filepath.Separator))
+		pathParts := []PathPart{
+			{
+				DirName: module.DirName,
+				DocFile: "index.html",
+			},
+		}
+		for i, part := range parts {
+			link := ""
+			pkgPath := filepath.Join(parts[:i+1]...)
+			if p2, ok := pkgs[pkgPath]; ok {
+				link = p2.FileName
+			}
+			pathParts = append(pathParts, PathPart{
+				DirName: part,
+				DocFile: link,
+			})
+		}
+		pkg.PathParts = pathParts
+	}
+
 	return
 }
