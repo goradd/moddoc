@@ -13,6 +13,7 @@ import (
 	"moddoc/tmpl"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -21,6 +22,7 @@ var indexTemplateFlag = flag.String("iTmpl", "", "The path to a custom index pag
 var sourcePathFlag = flag.String("i", "", "The path to the module directory. Should have a go.mod file. Will use current working directory by default.")
 var outPathFlag = flag.String("o", "", "The output directory. Will use current working directory by default.")
 var outputTemplatesFlag = flag.Bool("t", false, "Will write out the default index.tmpl file and package.tmpl. Will output to the directory specified in the -o flag.")
+var ignore = flag.String("p", "", "List of packages to ignore when generating documentation. Relative to root. Use : or ; to separate items. Do not start with a /.")
 
 func main() {
 	flag.Parse()
@@ -31,12 +33,22 @@ func main() {
 		if srcDir, err = os.Getwd(); err != nil {
 			log.Fatal(err)
 		}
+	} else {
+		var err error
+		if srcDir, err = filepath.Abs(srcDir); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	outDir := *outPathFlag
 	if outDir == "" {
 		var err error
 		if outDir, err = os.Getwd(); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		var err error
+		if outDir, err = filepath.Abs(outDir); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -87,8 +99,18 @@ func main() {
 		return
 	}
 
+	pkgs := strings.FieldsFunc(*ignore, func(r rune) bool {
+		return r == ':' || r == ';'
+	})
+	pkgSet := make(map[string]struct{})
+	for _, pkg := range pkgs {
+		pkgSet[pkg] = struct{}{}
+	}
+
 	for k := range m.Packages {
-		execPackageTemplate(packageTemplate, m.Packages, k, outDir)
+		if _, ok := pkgSet[k]; !ok {
+			execPackageTemplate(packageTemplate, m.Packages, k, outDir)
+		}
 	}
 
 	execModuleTemplate(indexTemplate, m, outDir)

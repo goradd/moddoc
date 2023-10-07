@@ -32,6 +32,7 @@ options:
 - iTmpl: The path to the index template file. By default, it will use its internal index template file. 
 - pTmpl: The path to the package template file. By default, it will use its internal package template file.
 - t: Instead of writing out the html, will output the default template files. You can use these as starting points for your custom template files. 
+- p: List of packages to ignore when generating documentation. Relative to root. Use : or ; to separate items. Do not start with a /. Packages that have no documentation will automatically be ignored.
 
 ## Tags
 Add the following to the bottom of a comment to prevent documentation from being
