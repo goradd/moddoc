@@ -45,6 +45,7 @@ type Type struct {
 	Name        string
 	CommentHtml string
 	Flags       map[string]string
+	Type        string // If we know its one of the types we can determine, we will name it
 	Constants   []Constant
 	Variables   []Variable
 	Functions   []Function

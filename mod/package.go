@@ -14,8 +14,8 @@ import (
 	"strings"
 )
 
-// StdLibSource is the URL for documentation of packages outside the module.
-const StdLibSource = `https://pkg.go.dev/`
+// ExternalPackageDoc is the URL for documentation of packages outside the module.
+const ExternalPackageDoc = `https://pkg.go.dev/`
 
 const hideCommand = "hide"
 const typeCommand = "type"
@@ -153,12 +153,9 @@ func (p *Package) parseHtmlComment(text string) (html string) {
 			l := strings.TrimPrefix(link.ImportPath, p.Module.Name)
 			l = strings.TrimPrefix(l, "/")
 			url = makeFileName(p.Module.Name, l, p.Name)
-		} else if strings.ContainsRune(link.ImportPath, '.') {
-			// Indicates this is a path to a URL
-			url = "https://" + link.ImportPath
 		} else if link.ImportPath != "" {
 			// assume this is a link to the standard library, so point to online doc
-			url = StdLibSource + link.ImportPath
+			url = ExternalPackageDoc + link.ImportPath
 		}
 
 		if link.Name != "" {
@@ -301,6 +298,23 @@ func (p *Package) parseTypes() {
 	for _, t := range p.DocPkg.Types {
 		var t2 Type
 		t2.Name = t.Name
+		typeName := "type"
+		if spec, ok := t.Decl.Specs[0].(*ast.TypeSpec); ok {
+			switch spec.Type.(type) {
+			case *ast.StructType:
+				typeName = "struct"
+			case *ast.ArrayType:
+				typeName = "[]"
+			case *ast.ChanType:
+				typeName = "chan"
+			case *ast.FuncType:
+				typeName = "func"
+			case *ast.InterfaceType:
+				typeName = "interface"
+			}
+		}
+		t2.Type = typeName
+
 		cmt, flags := parseCommentFlags(t.Doc)
 		if _, ok := flags[hideCommand]; ok {
 			continue // skip

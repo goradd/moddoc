@@ -9,19 +9,26 @@
 {{/* Build the breadcrumb in the navbar */}}
 <nav>
 {{range .PathParts}}{{if .DocFile }}<a href="{{.DocFile}}">{{.DirName}}</a>{{else}}{{.DirName}}{{end}}/{{end}}
+<div class="import_path"> import {{.ImportPath}}</div>
 </nav>
 <div class="package">
 <h1>Package {{.Name}}</h1>
-<p class="import_path"> import {{.ImportPath}}</p>
-
 {{ $p := . }}
+<div class="comment">
 {{ .CommentHtml }}
+</div>
 
 <h2 id="index">Index</h2>
-{{if .Constants }}<p><a href="#Constants">Constants</a>{{end}}
-{{if .Variables}}<p><a href="#Variables">Variables</a>{{end}}
-{{if .Functions}}<p><a href="#Functions">Functions</a>{{end}}
-{{if .Types}}<p><a href="#Types">Types</a>{{end}}
+{{if .Constants }}<p><a href="#Constants">Constants</a></p>{{end}}
+{{if .Variables}}<p><a href="#Variables">Variables</a></p>{{end}}
+{{if .Functions}}<p><a href="#Functions">Functions</a></p>{{end}}
+{{if .Types}}<p><a href="#Types">Types</a></p>
+<ul>
+{{ range .Types}}
+<li><a href="#{{.Name}}">{{.Name}}</a></li>
+{{end}}
+</ul>
+{{end}}
 
 {{if .Constants}}
 <h2 id="Constants">Constants</h2>
@@ -29,8 +36,10 @@
 {{range .Names}}
 <a id="{{.}}"></a>
 {{end}}
-<pre>{{.Code}}</pre>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
+</div>
 {{end}}
 {{end}}
 
@@ -40,16 +49,21 @@
 {{range .Names}}
 <a id="{{.}}"></a>
 {{end}}
-<pre>{{.Code}}</pre>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
+</div>
 {{end}}
 {{end}}
 
 {{if .Functions}}
 <h2 id="Functions">Functions</h2>
 {{ range .Functions }}
-<h3 id="{{.Name}}" class="func-name"><pre>{{.Code}}</pre></h3>
+<h3 id="{{.Name}}" class="func-name">func {{.Name}}</h3>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
+</div>
 {{end}}
 {{end}}
 
@@ -57,42 +71,51 @@
 <h2 id="Types">Types</h2>
 {{ range .Types }}
 {{ $typename := .Name }}
-<h3 id="{{ .Name}}" class="type-name">type <i>{{ .Name }}</i></h3>
-<pre>{{.Code}}</pre>
+<h3 id="{{ .Name}}" class="type-name">{{.Type }} {{ .Name }}</h3>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
+</div>
 
-{{if .Constants}}<h3 id = "{{ .Name}}.Constants">Constants</h3>{{end}}
+{{if .Constants}}<h4 id = "{{ .Name}}.Constants">Constants</h4>{{end}}
 {{ range .Constants }}
 {{range .Names}}
 <a id="{{$typename}}.{{.}}"></a>
 {{end}}
-<pre>{{.Code}}</pre>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
+</div>
 {{end}}
 
-{{if .Variables}}<h3 id = "{{ .Name}}.Variables">Variables</h3>{{end}}
+{{if .Variables}}<h4 id = "{{ .Name}}.Variables">Variables</h4>{{end}}
 {{ range .Variables }}
 {{range .Names}}
 <a id="{{$typename}}.{{.}}"></a>
 {{end}}
-<pre>{{.Code}}</pre>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
+</div>
 {{end}}
 
-{{if .Functions}}<h3 id = "{{ .Name}}.Functions">Functions</h3>{{end}}
+{{if .Functions}}<h4 id = "{{ .Name}}.Functions">Functions</h4>{{end}}
 {{ range .Functions }}
-<h4 id="{{$typename}}.{{.Name}}" class="func-name"><pre>{{.Code}}</pre></h4>
+<h4 id="{{$typename}}.{{.Name}}" class="func-name">func {{.Name}}</h4>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
+</div>
 {{end}}
 
-{{if .Methods}}<h3 id = "{{ .Name}}.Methods">Methods</h3>{{end}}
+{{if .Methods}}<h4 id = "{{ .Name}}.Methods">Methods</h4>{{end}}
 {{ range .Methods }}
-<h4 id="{{$typename}}.{{.Name}}" class="method-name"><pre>{{.Code}}</pre></h4>
-
+<h5 id="{{$typename}}.{{.Name}}" class="func-name">{{.Name}}</h5>
+<pre class="code">{{.Code}}</pre>
+<div class="comment">
 {{.CommentHtml}}
-{{end}}
-{{end}}
-{{end}}
+</div>
+{{end}}{{end}}{{end}}
 
 </div>
 </body>

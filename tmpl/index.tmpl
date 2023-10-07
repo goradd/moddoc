@@ -1,4 +1,10 @@
 {{/* This is the main default template. The input is the mod.Module structure. The output will be put in an index.html file. */}}
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
 <h1>Module {{.Name}}</h1>
 
@@ -7,3 +13,5 @@
 <li><a href="{{.FileName}}">{{ .Path }}</a>
 {{end}}
 </ul>
+</body>
+</html>
