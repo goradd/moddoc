@@ -59,6 +59,10 @@ func CountAnimals() int {
     return len(animals)
 }
 ```
+## Styles
+The default template imports the "styles.css" file. To style your documentation, create a styles.css
+file and put it in the directory with the documentation. See a sample [here](styles.css).
+
 
 ## Contributions
 Please submit your suggestions for improvement.

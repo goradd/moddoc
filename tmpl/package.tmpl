@@ -7,18 +7,19 @@
 <body>
 
 {{/* Build the breadcrumb in the navbar */}}
-<nav>
+<nav id="topnav">
 {{range .PathParts}}{{if .DocFile }}<a href="{{.DocFile}}">{{.DirName}}</a>{{else}}{{.DirName}}{{end}}/{{end}}
 <div class="import_path"> import {{.ImportPath}}</div>
 </nav>
-<div class="package">
+<section id="package">
 <h1>Package {{.Name}}</h1>
 {{ $p := . }}
 <div class="comment">
 {{ .CommentHtml }}
-</div>
+</section>
 
-<h2 id="index">Index</h2>
+<section id="index">
+<h2>Index</h2>
 {{if .Constants }}<p><a href="#Constants">Constants</a></p>{{end}}
 {{if .Variables}}<p><a href="#Variables">Variables</a></p>{{end}}
 {{if .Functions}}<p><a href="#Functions">Functions</a></p>{{end}}
@@ -29,7 +30,9 @@
 {{end}}
 </ul>
 {{end}}
+</section>
 
+<section id="content">
 {{if .Constants}}
 <h2 id="Constants">Constants</h2>
 {{ range .Constants }}
@@ -118,5 +121,6 @@
 {{end}}{{end}}{{end}}
 
 </div>
+</section>
 </body>
 </html>
