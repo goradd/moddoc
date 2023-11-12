@@ -15,7 +15,7 @@ ModDoc is useful for the following situations:
 3) You need to save the documentation separate from the source code for archiving or regulatory purposes.
 
 ## Installation
-`go install github.com/goradd/moddoc`
+`go install github.com/goradd/moddoc@latest`
 
 ## Requirements
 - Go 1.18 or greater
