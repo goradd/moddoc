@@ -8,9 +8,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/goradd/moddoc/mod"
+	"github.com/goradd/moddoc/tmpl"
 	"log"
-	"moddoc/mod"
-	"moddoc/tmpl"
 	"os"
 	"path/filepath"
 	"strings"

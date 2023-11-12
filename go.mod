@@ -1,5 +1,5 @@
 module github.com/goradd/moddoc
 
-go 1.20
-
 require golang.org/x/mod v0.12.0
+
+go 1.20
